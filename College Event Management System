@@ -1,0 +1,856 @@
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎓 College Event Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&amp;family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #6C3CE1;
+    --primary-light: #8B5CF6;
+    --secondary: #F59E0B;
+    --accent: #EC4899;
+    --success: #10B981;
+    --danger: #EF4444;
+    --info: #3B82F6;
+    --bg: #0D0B1E;
+    --surface: #13102B;
+    --surface2: #1C1840;
+    --border: #2D2860;
+    --text: #E2DEFF;
+    --text-muted: #7B7099;
+    --glow: 0 0 30px rgba(108,60,225,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.2) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 10%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(2px 2px at 90% 30%, rgba(108,60,225,0.4) 0%, transparent 100%),
+      radial-gradient(2px 2px at 5% 90%, rgba(236,72,153,0.3) 0%, transparent 100%);
+    pointer-events: none; z-index: 0;
+  }
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 260px;
+    background: linear-gradient(180deg, #1A1540 0%, #0D0B1E 100%);
+    border-right: 1px solid var(--border);
+    z-index: 100; display: flex; flex-direction: column; padding: 24px 0;
+  }
+  .brand { 
+    padding: 0 24px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; 
+}
+  .brand h1 { 
+    font-size: 1.1rem; font-weight: 800; color: white; line-height: 1.2; 
+}
+  .brand p { 
+    font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; 
+}
+  .brand-icon {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 14px; display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; margin-bottom: 12px; box-shadow: var(--glow);
+  }
+  nav a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 24px; color: var(--text-muted);
+    text-decoration: none; font-size: 0.9rem; font-weight: 500;
+    border-radius: 0 12px 12px 0; margin-right: 16px;
+    transition: all 0.2s; cursor: pointer;
+  }
+  nav a:hover, nav a.active {
+    background: linear-gradient(90deg, rgba(108,60,225,0.2), rgba(108,60,225,0.05));
+    color: var(--text); border-left: 3px solid var(--primary-light);
+  }
+  nav a .nav-icon { 
+    font-size: 1.2rem; min-width: 24px; text-align: center; 
+}
+  .sidebar-footer { 
+    margin-top: auto; padding: 16px 24px; font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid var(--border); 
+}
+  .main { 
+    margin-left: 260px; padding: 32px; min-height: 100vh; position: relative; z-index: 1; 
+}
+  .page { 
+    display: none; 
+}
+  .page.active { 
+    display: block; animation: fadeIn 0.3s ease; 
+}
+  .page-header { 
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border); 
+}
+  .page-title { 
+    font-size: 1.7rem; font-weight: 800; 
+}
+  .page-title span { 
+    font-size: 1.4rem; margin-right: 10px; 
+}
+  .page-subtitle { 
+    font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; 
+}
+  .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-bottom: 28px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px; position: relative; overflow: hidden; transition: transform 0.2s; }
+  .stat-card:hover { transform: translateY(-3px); }
+  .stat-card::before { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; border-radius: 50%; opacity: 0.12; }
+  .stat-card:nth-child(1)::before { background: var(--primary); }
+  .stat-card:nth-child(2)::before { background: var(--success); }
+  .stat-card:nth-child(3)::before { background: var(--secondary); }
+  .stat-card:nth-child(4)::before { background: var(--accent); }
+  .stat-icon { font-size: 2rem; margin-bottom: 10px; }
+  .stat-val { font-size: 2.4rem; font-weight: 900; font-family: 'Space Mono', monospace; }
+  .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; font-weight: 500; }
+  .stat-card:nth-child(1) .stat-val { color: var(--primary-light); }
+  .stat-card:nth-child(2) .stat-val { color: var(--success); }
+  .stat-card:nth-child(3) .stat-val { color: var(--secondary); }
+  .stat-card:nth-child(4) .stat-val { color: var(--accent); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  td { padding: 14px 16px; font-size: 0.88rem; border-bottom: 1px solid rgba(45,40,96,0.5); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(108,60,225,0.06); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+  .badge-technical { background: rgba(59,130,246,0.15); color: #60A5FA; }
+  .badge-cultural { background: rgba(236,72,153,0.15); color: #F472B6; }
+  .badge-sports { background: rgba(16,185,129,0.15); color: #34D399; }
+  .badge-academic { background: rgba(245,158,11,0.15); color: #FCD34D; }
+  .badge-social { background: rgba(139,92,246,0.15); color: #C4B5FD; }
+  .badge-upcoming { background: rgba(108,60,225,0.15); color: #A78BFA; }
+  .badge-completed { background: rgba(16,185,129,0.15); color: #34D399; }
+  .badge-cancelled { background: rgba(239,68,68,0.15); color: #F87171; }
+  .badge-paid { background: rgba(16,185,129,0.15); color: #34D399; }
+  .badge-pending { background: rgba(245,158,11,0.15); color: #FCD34D; }
+  .badge-free { background: rgba(59,130,246,0.15); color: #60A5FA; }
+  .badge-present { background: rgba(16,185,129,0.15); color: #34D399; }
+  .badge-absent { background: rgba(239,68,68,0.15); color: #F87171; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+  .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; box-shadow: 0 4px 14px rgba(108,60,225,0.4); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108,60,225,0.5); }
+  .btn-danger { background: rgba(239,68,68,0.15); color: #F87171; border: 1px solid rgba(239,68,68,0.3); }
+  .btn-danger:hover { background: rgba(239,68,68,0.25); }
+  .btn-edit { background: rgba(245,158,11,0.15); color: #FCD34D; border: 1px solid rgba(245,158,11,0.3); }
+  .btn-edit:hover { background: rgba(245,158,11,0.25); }
+  .btn-sm { padding: 6px 12px; font-size: 0.78rem; }
+  .btn-success { background: rgba(16,185,129,0.15); color: #34D399; border: 1px solid rgba(16,185,129,0.3); }
+  .btn-cancel { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 32px; width: 580px; max-height: 88vh; overflow-y: auto; position: relative; }
+  .modal h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 24px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; }
+  .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 0.88rem; font-family: inherit; outline: none; transition: border-color 0.2s; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+  .form-group select option { background: var(--surface2); }
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+  .modal-close { position: absolute; top: 20px; right: 20px; background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+  .toast { position: fixed; bottom: 32px; right: 32px; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 14px 20px; font-size: 0.9rem; font-weight: 500; z-index: 999; opacity: 0; transform: translateY(20px); transition: all 0.3s; display: flex; align-items: center; gap: 10px; max-width: 360px; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { border-color: var(--success); color: #34D399; }
+  .toast.error { border-color: var(--danger); color: #F87171; }
+  .events-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 18px; }
+  .event-card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 22px; transition: all 0.3s; position: relative; overflow: hidden; }
+  .event-card:hover { transform: translateY(-4px); border-color: var(--primary); box-shadow: var(--glow); }
+  .event-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--primary), var(--accent)); }
+  .event-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .event-card-title { font-size: 1rem; font-weight: 700; flex: 1; padding-right: 8px; }
+  .event-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .event-stats { display: flex; gap: 14px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .event-stat { font-size: 0.78rem; color: var(--text-muted); }
+  .event-stat strong { color: var(--text); font-family: 'Space Mono',monospace; }
+  .event-actions { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .search-bar { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 8px 16px; margin-bottom: 20px; }
+  .search-bar input { background: none; border: none; color: var(--text); font-size: 0.9rem; font-family: inherit; outline: none; flex: 1; }
+  .search-bar input::placeholder { color: var(--text-muted); }
+  .att-btn { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; border: none; cursor: pointer; font-family: inherit; }
+  .att-btn.present { background: rgba(16,185,129,0.2); color: #34D399; }
+  .att-btn.absent { background: rgba(239,68,68,0.15); color: #F87171; }
+  .leaderboard-item { display: flex; align-items: center; gap: 16px; padding: 14px; border-radius: 14px; background: var(--surface2); margin-bottom: 10px; border: 1px solid var(--border); }
+  .rank-num { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono',monospace; font-weight: 700; font-size: 0.9rem; }
+  .rank-1 { background: linear-gradient(135deg,#FFD700,#FFA500); color: #000; }
+  .rank-2 { background: linear-gradient(135deg,#C0C0C0,#9D9D9D); color: #000; }
+  .rank-3 { background: linear-gradient(135deg,#CD7F32,#B87333); color: #fff; }
+  .rank-other { background: var(--surface); color: var(--text-muted); }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 16px; }
+  .prog-bar { height: 6px; border-radius: 99px; background: var(--surface2); margin-top: 6px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg,var(--primary),var(--accent)); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">🎓</div>
+    <h1>EventHub College</h1>
+    <p>Event Management System</p>
+  </div>
+  <nav>
+    <a class="active" onclick="showPage('dashboard')"><span class="nav-icon">🏠</span> Dashboard</a>
+    <a onclick="showPage('events')"><span class="nav-icon">🎪</span> Events</a>
+    <a onclick="showPage('students')"><span class="nav-icon">👨‍🎓</span> Students</a>
+    <a onclick="showPage('registrations')"><span class="nav-icon">📋</span> Registrations</a>
+    <a onclick="showPage('attendance')"><span class="nav-icon">✅</span> Attendance</a>
+    <a onclick="showPage('results')"><span class="nav-icon">🏆</span> Results</a>
+    <a onclick="showPage('reports')"><span class="nav-icon">📊</span> Reports</a>
+  </nav>
+  <div class="sidebar-footer">🛡️ SQLite3 &nbsp;|&nbsp; 🐍 Python<br>DBMS College Project 2025</div>
+</aside>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div><div class="page-title"><span>🏠</span> Dashboard</div><div class="page-subtitle">Welcome back! Here's what's happening 🚀</div></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">🎪</div><div class="stat-val" id="stat-events">44</div><div class="stat-label">Total Events</div></div>
+      <div class="stat-card"><div class="stat-icon">👨‍🎓</div><div class="stat-val" id="stat-students">5</div><div class="stat-label">Total Students</div></div>
+      <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-val" id="stat-regs">0</div><div class="stat-label">Registrations</div></div>
+      <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-val" id="stat-upcoming">44</div><div class="stat-label">Upcoming Events</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card"><div class="card-title">📅 Recent Events</div><div id="recent-events">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-weight:600;font-size:0.9rem">Tech Symposium 2025</div><div style="font-size:0.75rem;color:var(--text-muted)">2025-06-15 • Main Auditorium</div></div>
+      <span class="badge badge-upcoming">upcoming</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-weight:600;font-size:0.9rem">Cultural Fiesta</div><div style="font-size:0.75rem;color:var(--text-muted)">2025-07-20 • Open Air Theatre</div></div>
+      <span class="badge badge-upcoming">upcoming</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-weight:600;font-size:0.9rem">Hackathon 2025</div><div style="font-size:0.75rem;color:var(--text-muted)">2025-08-10 • CS Lab Block</div></div>
+      <span class="badge badge-upcoming">upcoming</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-weight:600;font-size:0.9rem">Sports Day</div><div style="font-size:0.75rem;color:var(--text-muted)">2025-09-05 • College Ground</div></div>
+      <span class="badge badge-upcoming">upcoming</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-weight:600;font-size:0.9rem">Tech Symposium 2025</div><div style="font-size:0.75rem;color:var(--text-muted)">2025-06-15 • Main Auditorium</div></div>
+      <span class="badge badge-upcoming">upcoming</span>
+    </div></div></div>
+      <div class="card"><div class="card-title">🔥 Top Events by Registrations</div><div id="top-events">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:700;font-family:'Space Mono';color:var(--primary-light)">#1</span><span>Tech Symposium 2025</span></div>
+      <span style="font-weight:700;color:var(--secondary)">0 👥</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:700;font-family:'Space Mono';color:var(--primary-light)">#2</span><span>Cultural Fiesta</span></div>
+      <span style="font-weight:700;color:var(--secondary)">0 👥</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:700;font-family:'Space Mono';color:var(--primary-light)">#3</span><span>Hackathon 2025</span></div>
+      <span style="font-weight:700;color:var(--secondary)">0 👥</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:700;font-family:'Space Mono';color:var(--primary-light)">#4</span><span>Sports Day</span></div>
+      <span style="font-weight:700;color:var(--secondary)">0 👥</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:700;font-family:'Space Mono';color:var(--primary-light)">#5</span><span>Tech Symposium 2025</span></div>
+      <span style="font-weight:700;color:var(--secondary)">0 👥</span>
+    </div></div></div>
+    </div>
+  </div>
+
+  <!-- EVENTS -->
+  <div class="page" id="page-events">
+    <div class="page-header">
+      <div><div class="page-title"><span>🎪</span> Events</div><div class="page-subtitle">Add, edit and manage all college events</div></div>
+      <button class="btn btn-primary" onclick="openAddEvent()">➕ Add Event</button>
+    </div>
+    <div class="search-bar">🔍 <input type="text" id="event-search" placeholder="Search events…" oninput="filterEvents()"></div>
+    <div class="events-grid" id="events-grid"></div>
+  </div>
+
+  <!-- STUDENTS -->
+  <div class="page" id="page-students">
+    <div class="page-header">
+      <div><div class="page-title"><span>👨‍🎓</span> Students</div><div class="page-subtitle">Student database management</div></div>
+      <button class="btn btn-primary" onclick="openAddStudent()">➕ Add Student</button>
+    </div>
+    <div class="search-bar">🔍 <input type="text" id="student-search" placeholder="Search students…" oninput="filterStudents()"></div>
+    <div class="card">
+      <table>
+        <thead><tr><th>#</th><th>👤 Name</th><th>🎫 Roll No</th><th>📧 Email</th><th>📱 Phone</th><th>🏛️ Dept</th><th>Year</th><th>⚙️ Actions</th></tr></thead>
+        <tbody id="students-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- REGISTRATIONS -->
+  <div class="page" id="page-registrations">
+    <div class="page-header">
+      <div><div class="page-title"><span>📋</span> Registrations</div><div class="page-subtitle">Event registration management</div></div>
+      <button class="btn btn-primary" onclick="openModal('reg-modal')">➕ Register Student</button>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>#</th><th>🎪 Event</th><th>👤 Student</th><th>🎫 Roll No</th><th>📅 Date</th><th>💳 Payment</th><th>✅ Attendance</th><th>⚙️ Actions</th></tr></thead>
+        <tbody id="regs-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ATTENDANCE -->
+  <div class="page" id="page-attendance">
+    <div class="page-header">
+      <div><div class="page-title"><span>✅</span> Attendance</div><div class="page-subtitle">Mark and track attendance per event</div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="form-group" style="margin:0;"><label>🎪 Select Event</label><select id="att-event-select" onchange="loadAttendance()"><option value="">-- Choose an Event --</option></select></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📝 Attendance Sheet</div>
+      <table><thead><tr><th>#</th><th>👤 Student</th><th>🎫 Roll No</th><th>✅ Status</th><th>⚙️ Action</th></tr></thead><tbody id="att-tbody"></tbody></table>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="page" id="page-results">
+    <div class="page-header">
+      <div><div class="page-title"><span>🏆</span> Results</div><div class="page-subtitle">Event results &amp; leaderboard</div></div>
+      <button class="btn btn-primary" onclick="openModal('result-modal')">➕ Add Result</button>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="form-group" style="margin:0;"><label>Filter by Event</label><select id="result-event-select" onchange="loadResults()"><option value="">-- All Events --</option></select></div>
+    </div>
+    <div id="results-list"></div>
+  </div>
+
+  <!-- REPORTS -->
+  <div class="page" id="page-reports">
+    <div class="page-header">
+      <div><div class="page-title"><span>📊</span> Reports</div><div class="page-subtitle">Analytics &amp; insights</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card"><div class="card-title">📈 Events by Category</div><div id="report-categories"></div></div>
+      <div class="card"><div class="card-title">🏛️ Students by Department</div><div id="report-departments"></div></div>
+    </div>
+    <div class="card"><div class="card-title">📋 Summary</div><div id="report-summary"></div></div>
+  </div>
+
+</main>
+
+<!-- ADD/EDIT EVENT MODAL -->
+<div class="modal-overlay" id="event-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('event-modal')">✕</button>
+    <h2 id="event-modal-title">🎪 Add New Event</h2>
+    <input type="hidden" id="ev-id">
+    <div class="form-group"><label>Event Title *</label><input id="ev-title" placeholder="e.g. Tech Symposium 2025"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Category *</label>
+        <select id="ev-category">
+          <option value="Technical">🔬 Technical</option>
+          <option value="Cultural">🎭 Cultural</option>
+          <option value="Sports">⚽ Sports</option>
+          <option value="Academic">📚 Academic</option>
+          <option value="Social">🌱 Social</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Department</label><select id="ev-dept"></select></div>
+    </div>
+    <div class="form-group"><label>Venue *</label><input id="ev-venue" placeholder="e.g. Main Auditorium"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Date *</label><input type="date" id="ev-date"></div>
+      <div class="form-group"><label>Time *</label><input type="time" id="ev-time"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Max Participants</label><input type="number" id="ev-maxp" value="100" min="1"></div>
+      <div class="form-group"><label>Registration Deadline</label><input type="date" id="ev-deadline"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Organizer Name</label><input id="ev-org-name" placeholder="Dr. Ramesh Kumar"></div>
+      <div class="form-group"><label>Organizer Email</label><input type="email" id="ev-org-email" placeholder="organizer@college.edu"></div>
+    </div>
+    <div class="form-group"><label>Description</label><textarea id="ev-desc" rows="3" placeholder="Brief description…"></textarea></div>
+    <div class="form-group"><label>Status</label>
+      <select id="ev-status">
+        <option value="upcoming">🔵 Upcoming</option>
+        <option value="completed">✅ Completed</option>
+        <option value="cancelled">❌ Cancelled</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-cancel" onclick="closeModal('event-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEvent()" id="ev-save-btn">💾 Save Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT STUDENT MODAL -->
+<div class="modal-overlay" id="student-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('student-modal')">✕</button>
+    <h2 id="student-modal-title">👨‍🎓 Add New Student</h2>
+    <input type="hidden" id="st-id">
+    <div class="form-group"><label>Full Name *</label><input id="st-name" placeholder="Aakash Patel"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Roll Number *</label><input id="st-roll" placeholder="21CS001"></div>
+      <div class="form-group"><label>Year *</label>
+        <select id="st-year">
+          <option value="1">1st Year</option><option value="2">2nd Year</option>
+          <option value="3">3rd Year</option><option value="4">4th Year</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label>Email *</label><input type="email" id="st-email" placeholder="student@college.edu"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Phone</label><input id="st-phone" placeholder="9876543210"></div>
+      <div class="form-group"><label>Department</label><select id="st-dept"></select></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-cancel" onclick="closeModal('student-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStudent()" id="st-save-btn">💾 Save Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTRATION MODAL -->
+<div class="modal-overlay" id="reg-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('reg-modal')">✕</button>
+    <h2>📋 Register Student for Event</h2>
+    <div class="form-group"><label>Select Event *</label><select id="reg-event"></select></div>
+    <div class="form-group"><label>Select Student *</label><select id="reg-student"></select></div>
+    <div class="form-group"><label>Payment Status</label>
+      <select id="reg-payment">
+        <option value="pending">⏳ Pending</option>
+        <option value="paid">✅ Paid</option>
+        <option value="free">🆓 Free</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-cancel" onclick="closeModal('reg-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRegistration()">✅ Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT MODAL -->
+<div class="modal-overlay" id="result-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('result-modal')">✕</button>
+    <h2>🏆 Add Result</h2>
+    <div class="form-group"><label>Select Event *</label><select id="res-event"></select></div>
+    <div class="form-group"><label>Select Student *</label><select id="res-student"></select></div>
+    <div class="form-row">
+      <div class="form-group"><label>Position</label><input type="number" id="res-pos" placeholder="1" min="1"></div>
+      <div class="form-group"><label>Score</label><input type="number" id="res-score" placeholder="95.5" step="0.1"></div>
+    </div>
+    <div class="form-group"><label>Prize / Award</label><input id="res-prize" placeholder="Gold Medal…"></div>
+    <div class="form-group"><label>Remarks</label><textarea id="res-remarks" rows="2"></textarea></div>
+    <div class="form-actions">
+      <button class="btn btn-cancel" onclick="closeModal('result-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveResult()">🏆 Save Result</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:8080/api';
+let eventsData = [], studentsData = [], deptsData = [];
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const pages = ['dashboard','events','students','registrations','attendance','results','reports'];
+  document.querySelectorAll('nav a')[pages.indexOf(name)].classList.add('active');
+  const loaders = { dashboard: loadDashboard, events: loadEvents, students: loadStudents, registrations: loadRegistrations, attendance: loadAttendancePage, results: loadResultsPage, reports: loadReports };
+  if (loaders[name]) loaders[name]();
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
+
+async function api(path, method = 'GET', body = null) {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(API + path, opts);
+    if (!r.ok) { const err = await r.json().catch(() => ({ message: `HTTP ${r.status}` })); throw new Error(err.message || `HTTP ${r.status}`); }
+    return await r.json();
+  } catch (err) {
+    if (method !== 'GET') showToast('❌ ' + err.message, 'error');
+    return method === 'GET' ? [] : { success: false, message: err.message };
+  }
+}
+
+function fillDeptSelects() {
+  const opts = `<option value="">-- Select --</option>` + deptsData.map(d => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('');
+  ['ev-dept','st-dept'].forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = opts; });
+}
+function fillEventSelects(ids) {
+  const opts = `<option value="">-- Select Event --</option>` + eventsData.map(e => `<option value="${e.id}">${e.title}</option>`).join('');
+  ids.forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = opts; });
+}
+function fillStudentSelects(ids) {
+  const opts = `<option value="">-- Select Student --</option>` + studentsData.map(s => `<option value="${s.id}">${s.roll_number} – ${s.name}</option>`).join('');
+  ids.forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = opts; });
+}
+
+// DASHBOARD
+async function loadDashboard() {
+  const d = await api('/dashboard');
+  if (!d || !d.stats) return;
+  document.getElementById('stat-events').textContent   = d.stats.total_events;
+  document.getElementById('stat-students').textContent = d.stats.total_students;
+  document.getElementById('stat-regs').textContent     = d.stats.total_registrations;
+  document.getElementById('stat-upcoming').textContent = d.stats.upcoming_events;
+  document.getElementById('recent-events').innerHTML = (d.recent_events||[]).map(e => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-weight:600;font-size:0.9rem">${e.title}</div><div style="font-size:0.75rem;color:var(--text-muted)">${e.event_date} • ${e.venue}</div></div>
+      <span class="badge badge-${e.status}">${e.status}</span>
+    </div>`).join('') || '<div class="empty-state"><div class="empty-icon">📭</div><p>No events yet</p></div>';
+  document.getElementById('top-events').innerHTML = (d.top_events||[]).map((e,i) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px"><span style="font-weight:700;font-family:'Space Mono';color:var(--primary-light)">#${i+1}</span><span>${e.title}</span></div>
+      <span style="font-weight:700;color:var(--secondary)">${e.cnt} 👥</span>
+    </div>`).join('') || '<div class="empty-state"><div class="empty-icon">📊</div><p>No data yet</p></div>';
+}
+
+// EVENTS
+async function loadEvents() {
+  eventsData = await api('/events');
+  deptsData  = await api('/departments');
+  fillDeptSelects();
+  renderEvents(eventsData);
+}
+function filterEvents() {
+  const q = document.getElementById('event-search').value.toLowerCase();
+  renderEvents(eventsData.filter(e => e.title.toLowerCase().includes(q) || e.category.toLowerCase().includes(q) || e.venue.toLowerCase().includes(q)));
+}
+function renderEvents(list) {
+  const grid = document.getElementById('events-grid');
+  if (!list.length) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📭</div><p>No events found. Add your first event!</p></div>'; return; }
+  grid.innerHTML = list.map(e => `
+    <div class="event-card">
+      <div class="event-card-header">
+        <div class="event-card-title">${e.title}</div>
+        <span class="badge badge-${(e.category||'').toLowerCase()}">${e.category}</span>
+      </div>
+      <div class="event-meta">📅 ${e.event_date} &nbsp; ⏰ ${e.event_time}</div>
+      <div class="event-meta">📍 ${e.venue}</div>
+      <div class="event-meta">🏛️ ${e.dept_name || 'All Departments'}</div>
+      ${e.organizer_name ? `<div class="event-meta">👤 ${e.organizer_name}</div>` : ''}
+      <div class="event-stats">
+        <div class="event-stat">👥 Registered<br><strong>${e.registered_count||0}</strong></div>
+        <div class="event-stat">🎯 Max<br><strong>${e.max_participants}</strong></div>
+        <div class="event-stat">📌 Status<br><strong><span class="badge badge-${e.status}">${e.status}</span></strong></div>
+      </div>
+      <div class="event-actions">
+        <button class="btn btn-edit btn-sm" onclick="openEditEvent(${e.id})">✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEvent(${e.id})">🗑️ Delete</button>
+      </div>
+    </div>`).join('');
+}
+function openAddEvent() {
+  document.getElementById('event-modal-title').textContent = '🎪 Add New Event';
+  document.getElementById('ev-save-btn').textContent = '💾 Save Event';
+  document.getElementById('ev-id').value = '';
+  ['ev-title','ev-venue','ev-desc','ev-org-name','ev-org-email','ev-date','ev-time','ev-deadline'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ev-maxp').value = '100';
+  document.getElementById('ev-category').value = 'Technical';
+  document.getElementById('ev-status').value = 'upcoming';
+  document.getElementById('ev-dept').value = '';
+  openModal('event-modal');
+}
+function openEditEvent(id) {
+  const e = eventsData.find(x => x.id === id); if (!e) return;
+  document.getElementById('event-modal-title').textContent = '✏️ Edit Event';
+  document.getElementById('ev-save-btn').textContent = '💾 Update Event';
+  document.getElementById('ev-id').value        = e.id;
+  document.getElementById('ev-title').value     = e.title || '';
+  document.getElementById('ev-category').value  = e.category || 'Technical';
+  document.getElementById('ev-venue').value     = e.venue || '';
+  document.getElementById('ev-date').value      = e.event_date || '';
+  document.getElementById('ev-time').value      = e.event_time || '';
+  document.getElementById('ev-maxp').value      = e.max_participants || 100;
+  document.getElementById('ev-deadline').value  = e.registration_deadline || '';
+  document.getElementById('ev-dept').value      = e.department_id || '';
+  document.getElementById('ev-org-name').value  = e.organizer_name || '';
+  document.getElementById('ev-org-email').value = e.organizer_email || '';
+  document.getElementById('ev-desc').value      = e.description || '';
+  document.getElementById('ev-status').value    = e.status || 'upcoming';
+  openModal('event-modal');
+}
+async function saveEvent() {
+  const id    = document.getElementById('ev-id').value;
+  const title = document.getElementById('ev-title').value.trim();
+  const venue = document.getElementById('ev-venue').value.trim();
+  const date  = document.getElementById('ev-date').value;
+  const time  = document.getElementById('ev-time').value;
+  if (!title) return showToast('❌ Event Title is required!', 'error');
+  if (!venue) return showToast('❌ Venue is required!', 'error');
+  if (!date)  return showToast('❌ Date is required!', 'error');
+  if (!time)  return showToast('❌ Time is required!', 'error');
+  const data = {
+    title, venue, event_date: date, event_time: time,
+    category: document.getElementById('ev-category').value,
+    max_participants: parseInt(document.getElementById('ev-maxp').value)||100,
+    registration_deadline: document.getElementById('ev-deadline').value,
+    department_id: document.getElementById('ev-dept').value || null,
+    organizer_name: document.getElementById('ev-org-name').value,
+    organizer_email: document.getElementById('ev-org-email').value,
+    description: document.getElementById('ev-desc').value,
+    status: document.getElementById('ev-status').value,
+  };
+  if (id) { data.id = parseInt(id); }
+  const r = await api(id ? '/events/update' : '/events', 'POST', data);
+  if (r.success) { showToast(r.message); closeModal('event-modal'); loadEvents(); }
+  else showToast(r.message || '❌ Failed!', 'error');
+}
+async function deleteEvent(id) {
+  if (!confirm('⚠️ Delete this event and all registrations?')) return;
+  const r = await api('/events/delete', 'POST', { id });
+  if (r.success) { showToast(r.message); loadEvents(); }
+  else showToast(r.message, 'error');
+}
+
+// STUDENTS
+async function loadStudents() {
+  studentsData = await api('/students');
+  deptsData    = await api('/departments');
+  fillDeptSelects();
+  renderStudents(studentsData);
+}
+function filterStudents() {
+  const q = document.getElementById('student-search').value.toLowerCase();
+  renderStudents(studentsData.filter(s => s.name.toLowerCase().includes(q) || s.roll_number.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)));
+}
+function renderStudents(list) {
+  const tbody = document.getElementById('students-tbody');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">👤</div><p>No students yet</p></div></td></tr>'; return; }
+  tbody.innerHTML = list.map((s,i) => `
+    <tr>
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td><strong>${s.name}</strong></td>
+      <td style="font-family:'Space Mono';font-size:0.82rem;color:var(--primary-light)">${s.roll_number}</td>
+      <td style="color:var(--text-muted);font-size:0.83rem">${s.email}</td>
+      <td style="color:var(--text-muted);font-size:0.83rem">${s.phone||'—'}</td>
+      <td>${s.dept_name||'—'}</td>
+      <td style="text-align:center"><span style="background:rgba(139,92,246,0.15);color:#C4B5FD;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:600">Year ${s.year}</span></td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn btn-edit btn-sm" onclick="openEditStudent(${s.id})">✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.id})">🗑️</button>
+      </div></td>
+    </tr>`).join('');
+}
+function openAddStudent() {
+  document.getElementById('student-modal-title').textContent = '👨‍🎓 Add New Student';
+  document.getElementById('st-save-btn').textContent = '💾 Save Student';
+  document.getElementById('st-id').value = '';
+  ['st-name','st-roll','st-email','st-phone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('st-year').value = '1';
+  document.getElementById('st-dept').value = '';
+  openModal('student-modal');
+}
+function openEditStudent(id) {
+  const s = studentsData.find(x => x.id === id); if (!s) return;
+  document.getElementById('student-modal-title').textContent = '✏️ Edit Student';
+  document.getElementById('st-save-btn').textContent = '💾 Update Student';
+  document.getElementById('st-id').value    = s.id;
+  document.getElementById('st-name').value  = s.name||'';
+  document.getElementById('st-roll').value  = s.roll_number||'';
+  document.getElementById('st-email').value = s.email||'';
+  document.getElementById('st-phone').value = s.phone||'';
+  document.getElementById('st-year').value  = s.year||'1';
+  document.getElementById('st-dept').value  = s.department_id||'';
+  openModal('student-modal');
+}
+async function saveStudent() {
+  const id    = document.getElementById('st-id').value;
+  const name  = document.getElementById('st-name').value.trim();
+  const roll  = document.getElementById('st-roll').value.trim();
+  const email = document.getElementById('st-email').value.trim();
+  if (!name)  return showToast('❌ Name is required!', 'error');
+  if (!roll)  return showToast('❌ Roll Number is required!', 'error');
+  if (!email) return showToast('❌ Email is required!', 'error');
+  const data = { name, roll_number: roll, email, phone: document.getElementById('st-phone').value, department_id: document.getElementById('st-dept').value||null, year: document.getElementById('st-year').value };
+  if (id) { data.id = parseInt(id); }
+  const r = await api(id ? '/students/update' : '/students', 'POST', data);
+  if (r.success) { showToast(r.message); closeModal('student-modal'); loadStudents(); }
+  else showToast(r.message||'❌ Failed!', 'error');
+}
+async function deleteStudent(id) {
+  if (!confirm('⚠️ Delete this student and their registrations?')) return;
+  const r = await api('/students/delete', 'POST', { id });
+  if (r.success) { showToast(r.message); loadStudents(); }
+  else showToast(r.message, 'error');
+}
+
+// REGISTRATIONS
+async function loadRegistrations() {
+  const [regs, events, students, depts] = await Promise.all([api('/registrations'), api('/events'), api('/students'), api('/departments')]);
+  eventsData = events; studentsData = students; deptsData = depts;
+  fillEventSelects(['reg-event']); fillStudentSelects(['reg-student']);
+  const tbody = document.getElementById('regs-tbody');
+  if (!regs.length) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📋</div><p>No registrations yet</p></div></td></tr>'; return; }
+  tbody.innerHTML = regs.map((r,i) => `
+    <tr>
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td><strong>${r.event_title}</strong></td>
+      <td>${r.student_name}</td>
+      <td style="font-family:'Space Mono';font-size:0.82rem;color:var(--primary-light)">${r.roll_number}</td>
+      <td style="font-size:0.8rem;color:var(--text-muted)">${(r.registration_date||'').slice(0,10)}</td>
+      <td><span class="badge badge-${r.payment_status}">${r.payment_status}</span></td>
+      <td><span class="badge badge-${r.attendance}">${r.attendance}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteRegistration(${r.id})">🗑️ Remove</button></td>
+    </tr>`).join('');
+}
+async function saveRegistration() {
+  const event_id = document.getElementById('reg-event').value;
+  const student_id = document.getElementById('reg-student').value;
+  if (!event_id || !student_id) return showToast('❌ Select both Event and Student!', 'error');
+  const r = await api('/registrations', 'POST', { event_id: parseInt(event_id), student_id: parseInt(student_id), payment_status: document.getElementById('reg-payment').value });
+  if (r.success) { showToast(r.message); closeModal('reg-modal'); loadRegistrations(); }
+  else showToast(r.message, 'error');
+}
+async function deleteRegistration(id) {
+  if (!confirm('Remove this registration?')) return;
+  const r = await api('/registrations/delete', 'POST', { id });
+  if (r.success) { showToast(r.message); loadRegistrations(); }
+  else showToast(r.message, 'error');
+}
+
+// ATTENDANCE
+async function loadAttendancePage() {
+  eventsData = await api('/events');
+  const sel = document.getElementById('att-event-select');
+  sel.innerHTML = '<option value="">-- Choose an Event --</option>' + eventsData.map(e => `<option value="${e.id}">${e.title} (${e.event_date})</option>`).join('');
+  document.getElementById('att-tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:30px">👆 Select an event above to mark attendance</td></tr>';
+}
+async function loadAttendance() {
+  const event_id = document.getElementById('att-event-select').value; if (!event_id) return;
+  const regs = await api(`/registrations?event_id=${event_id}`);
+  const tbody = document.getElementById('att-tbody');
+  if (!regs.length) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">👤</div><p>No registrations for this event</p></div></td></tr>'; return; }
+  tbody.innerHTML = regs.map((r,i) => `
+    <tr id="att-row-${r.id}">
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td><strong>${r.student_name}</strong></td>
+      <td style="font-family:'Space Mono';font-size:0.82rem;color:var(--primary-light)">${r.roll_number}</td>
+      <td><span class="badge badge-${r.attendance}" id="att-badge-${r.id}">${r.attendance}</span></td>
+      <td>
+        <button class="att-btn ${r.attendance==='present'?'absent':'present'}" id="att-btn-${r.id}" onclick="toggleAttendance(${r.id},'${r.attendance}')">
+          ${r.attendance==='present'?'❌ Mark Absent':'✅ Mark Present'}
+        </button>
+      </td>
+    </tr>`).join('');
+}
+async function toggleAttendance(id, current) {
+  const next = current === 'present' ? 'absent' : 'present';
+  const r = await api('/attendance', 'POST', { id, attendance: next });
+  if (r.success) {
+    document.getElementById(`att-badge-${id}`).className = `badge badge-${next}`;
+    document.getElementById(`att-badge-${id}`).textContent = next;
+    const btn = document.getElementById(`att-btn-${id}`);
+    btn.className = `att-btn ${next==='present'?'absent':'present'}`;
+    btn.textContent = next==='present'?'❌ Mark Absent':'✅ Mark Present';
+    btn.onclick = () => toggleAttendance(id, next);
+    showToast(r.message);
+  } else showToast(r.message, 'error');
+}
+
+// RESULTS
+async function loadResultsPage() {
+  const [events, students] = await Promise.all([api('/events'), api('/students')]);
+  eventsData = events; studentsData = students;
+  fillEventSelects(['res-event','result-event-select']);
+  fillStudentSelects(['res-student']);
+  loadResults();
+}
+async function loadResults() {
+  const event_id = document.getElementById('result-event-select').value;
+  const results = await api('/results' + (event_id ? `?event_id=${event_id}` : ''));
+  const container = document.getElementById('results-list');
+  if (!results.length) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div><p>No results yet. Add winners!</p></div>'; return; }
+  const grouped = {};
+  results.forEach(r => { if (!grouped[r.event_title]) grouped[r.event_title]=[]; grouped[r.event_title].push(r); });
+  container.innerHTML = Object.entries(grouped).map(([event,items]) => `
+    <div class="card">
+      <div class="card-title">🎪 ${event}</div>
+      ${items.map(r => {
+        const rc = r.position===1?'rank-1':r.position===2?'rank-2':r.position===3?'rank-3':'rank-other';
+        const medal = r.position===1?'🥇':r.position===2?'🥈':r.position===3?'🥉':`#${r.position}`;
+        return `<div class="leaderboard-item">
+          <div class="rank-num ${rc}">${medal}</div>
+          <div style="flex:1"><div style="font-weight:700">${r.student_name}</div><div style="font-size:0.78rem;color:var(--text-muted)">${r.roll_number}${r.prize?' • 🏅 '+r.prize:''}</div></div>
+          ${r.score!=null?`<div style="font-family:'Space Mono';font-size:1.1rem;font-weight:700;color:var(--secondary)">${r.score}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+async function saveResult() {
+  const event_id = document.getElementById('res-event').value;
+  const student_id = document.getElementById('res-student').value;
+  if (!event_id || !student_id) return showToast('❌ Select Event and Student!', 'error');
+  const r = await api('/results', 'POST', { event_id: parseInt(event_id), student_id: parseInt(student_id), position: parseInt(document.getElementById('res-pos').value)||null, score: parseFloat(document.getElementById('res-score').value)||null, prize: document.getElementById('res-prize').value, remarks: document.getElementById('res-remarks').value });
+  if (r.success) { showToast(r.message); closeModal('result-modal'); loadResults(); }
+  else showToast(r.message, 'error');
+}
+
+// REPORTS
+async function loadReports() {
+  const [events, students, regs, depts] = await Promise.all([api('/events'), api('/students'), api('/registrations'), api('/departments')]);
+  const catCount = {};
+  events.forEach(e => { catCount[e.category]=(catCount[e.category]||0)+1; });
+  const maxCat = Math.max(...Object.values(catCount),1);
+  document.getElementById('report-categories').innerHTML = Object.entries(catCount).map(([cat,cnt]) => `
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:600">${cat}</span><span style="color:var(--primary-light);font-family:'Space Mono'">${cnt}</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${(cnt/maxCat*100).toFixed(0)}%"></div></div>
+    </div>`).join('') || '<div class="empty-state"><div class="empty-icon">📊</div><p>No data</p></div>';
+  const deptCount = {};
+  students.forEach(s => { const d=depts.find(x=>x.id===s.department_id); const name=d?d.name:'Unknown'; deptCount[name]=(deptCount[name]||0)+1; });
+  const maxDept = Math.max(...Object.values(deptCount),1);
+  document.getElementById('report-departments').innerHTML = Object.entries(deptCount).map(([dept,cnt]) => `
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:600">${dept}</span><span style="color:var(--success);font-family:'Space Mono'">${cnt}</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${(cnt/maxDept*100).toFixed(0)}%;background:linear-gradient(90deg,var(--success),var(--info))"></div></div>
+    </div>`).join('') || '<div class="empty-state"><div class="empty-icon">🏛️</div><p>No data</p></div>';
+  const paid=regs.filter(r=>r.payment_status==='paid').length;
+  const pending=regs.filter(r=>r.payment_status==='pending').length;
+  const present=regs.filter(r=>r.attendance==='present').length;
+  document.getElementById('report-summary').innerHTML = `
+    <table>
+      <thead><tr><th>📊 Metric</th><th>📈 Value</th></tr></thead>
+      <tbody>
+        <tr><td>Total Events</td><td><strong style="color:var(--primary-light)">${events.length}</strong></td></tr>
+        <tr><td>Upcoming Events</td><td><strong style="color:var(--accent)">${events.filter(e=>e.status==='upcoming').length}</strong></td></tr>
+        <tr><td>Completed Events</td><td><strong style="color:var(--success)">${events.filter(e=>e.status==='completed').length}</strong></td></tr>
+        <tr><td>Total Students</td><td><strong style="color:var(--secondary)">${students.length}</strong></td></tr>
+        <tr><td>Total Registrations</td><td><strong style="color:var(--info)">${regs.length}</strong></td></tr>
+        <tr><td>Payments Paid</td><td><strong style="color:var(--success)">${paid}</strong></td></tr>
+        <tr><td>Payments Pending</td><td><strong style="color:var(--secondary)">${pending}</strong></td></tr>
+        <tr><td>Present in Attendance</td><td><strong style="color:var(--success)">${present}</strong></td></tr>
+      </tbody>
+    </table>`;
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>
